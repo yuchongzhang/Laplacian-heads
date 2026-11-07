@@ -1,3 +1,15 @@
+Laplacian-Heads licensing
+
+Project-original material is covered by the MIT license below. Imported code
+and modifications of imported code retain the license of their source:
+
+- pytorch-image-models/: Apache License 2.0; see pytorch-image-models/LICENSE.
+- nanochat/: MIT License; see nanochat/LICENSE.
+- dinov3/: DINOv3 License; see dinov3/LICENSE.md.
+
+The project-original license does not replace these third-party licenses.
+Copyright and attribution notices in the source files are retained.
+
 MIT License
 
 Copyright (c) 2026 Yuchong Zhang

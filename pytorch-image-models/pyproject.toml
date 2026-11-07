@@ -1,0 +1,21 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "timm"
+authors = [{name = "Ross Wightman"}]
+description = "DeiT-B image classification and Laplacian head measurements"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+dependencies = ["torch>=2.4", "torchvision", "pyyaml", "numpy"]
+dynamic = ["version"]
+
+[tool.pdm.version]
+source = "file"
+path = "timm/version.py"
+
+[project.optional-dependencies]
+analysis = ["matplotlib"]
+logging = ["wandb"]

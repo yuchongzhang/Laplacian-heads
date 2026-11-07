@@ -1,0 +1,10 @@
+matplotlib
+numpy
+omegaconf
+pillow
+pyarrow
+scikit-learn
+termcolor
+torch
+torchmetrics
+torchvision

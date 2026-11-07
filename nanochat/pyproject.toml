@@ -1,0 +1,21 @@
+[project]
+name = "nanochat"
+version = "0.1.0"
+description = "Causal language modeling experiments for Laplacian Heads"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "filelock>=3.19.0",
+    "requests>=2.32.0",
+    "PyYAML>=6.0",
+    "Jinja2>=3.1",
+    "matplotlib>=3.10.8",
+    "setuptools>=65.0.0",
+    "kernels>=0.11.7",
+    "numpy>=1.26.0",
+    "pyarrow>=21.0.0",
+    "rustbpe>=0.1.0",
+    "tiktoken>=0.11.0",
+    "torch==2.9.1",
+    "wandb>=0.21.3",
+]

@@ -1,0 +1,33 @@
+seed: 0
+train:
+  batch_size: 128
+  num_workers: 12
+  epochs: 10
+  epoch_length: 10010
+  n_last_blocks_list:
+  - 1
+  use_avgpool_list:
+  - true
+  resume: false
+  learning_rates:
+  - 1.0e-05
+  - 2.0e-05
+  - 5.0e-05
+  - 0.0001
+  - 0.0002
+  - 0.0005
+  - 0.001
+  - 0.002
+  - 0.005
+  - 0.01
+  - 0.02
+  - 0.05
+  - 0.07
+  - 0.1
+  - 0.15
+  - 0.2
+eval:
+  num_workers: 8
+transform:
+  resize_size: 256
+  crop_size: 224

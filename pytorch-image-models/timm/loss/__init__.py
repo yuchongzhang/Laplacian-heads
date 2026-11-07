@@ -1,0 +1,2 @@
+from .binary_cross_entropy import BinaryCrossEntropy
+from .cross_entropy import SoftTargetCrossEntropy, LabelSmoothingCrossEntropy
