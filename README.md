@@ -127,6 +127,8 @@ python -m scripts.plot_performance \
 ```
 
 These commands produce spectra, component counts, next-token ANOVA, and BPB/CORE summaries.
+Add `--center` to `scripts.measure_representations` for spectra centered over tokens
+within each sequence. The default is uncentered; ANOVA is unaffected.
 
 ## DINO
 
@@ -186,6 +188,8 @@ python -m measurements.plot --input-dir outputs/pca --output-dir outputs/pca-fig
 
 `--images` accepts image files or folders. See the [DINO README](dinov3/README.md)
 for model/run manifest formats and image-selection options.
+Add `--center` to `measurements.spectrum` to subtract each image's mean patch vector
+before computing spectra and component counts; the default is uncentered.
 
 ## Citation
 

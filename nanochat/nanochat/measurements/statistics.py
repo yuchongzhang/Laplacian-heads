@@ -1,4 +1,4 @@
-"""Uncentered spectra and streaming, observation-weighted next-token ANOVA."""
+"""Token spectra and streaming, observation-weighted next-token ANOVA."""
 
 import numpy as np
 import torch
@@ -6,15 +6,18 @@ import torch
 ALPHAS = (0.90, 0.95, 0.99, 0.999)
 
 
-def uncentered_spectrum(tokens):
-    """All d eigenvalues of X.T @ X in float64, without centering or rescaling.
+def token_spectrum(tokens, *, center=False):
+    """All d eigenvalues of X.T @ X in float64, without rescaling.
 
+    If center=True, subtract this sequence's mean token vector first.
     Use the smaller Gram matrix; fall back to direct CPU SVD if the Gram
     eigensolver loses a nonnegative tail. No ridge or eigenvalue floor is used.
     """
     x = tokens.detach().double()
     if x.ndim != 2 or min(x.shape) == 0 or not torch.isfinite(x).all():
         raise ValueError("Expected a finite nonempty (tokens, width) matrix")
+    if center:
+        x = x - x.mean(dim=0, keepdim=True)
     gram = x.T @ x if x.shape[1] <= x.shape[0] else x @ x.T
     values = torch.linalg.eigvalsh(gram).flip(0).cpu()
     if not torch.isfinite(values).all() or (values <= 0).any():

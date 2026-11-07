@@ -49,6 +49,11 @@ def main():
             if len(samples) != 1 or len(representations) != 1 or len(dtypes) != 1:
                 parser.error(f"Cannot compare d{depth} {metric}: input samples, representation, or dtype differ")
             if metric == "spectrum":
+                centerings = {r[metric].get("centering", "none") for r in relevant}
+                if len(centerings) != 1:
+                    parser.error("Spectrum comparisons require identical centering")
+                centering = centerings.pop()
+                centered = centering != "none"
                 selections = {tuple(r[metric]["sample_indices"]) for r in relevant}
                 if len(selections) != 1:
                     parser.error("Spectrum comparisons require identical sequence indices")
@@ -61,9 +66,10 @@ def main():
                     lower = mean - sd
                     ax.fill_between(rank, lower, mean + sd, where=lower > 0, color=line.get_color(), alpha=.12)
                     spectrum_rows.extend({"model": record["model"], "depth": depth, "rank": int(i),
-                                          "mean": float(mu), "population_sd": float(sigma)}
+                                          "mean": float(mu), "population_sd": float(sigma), "centering": centering}
                                          for i, mu, sigma in zip(rank, mean, sd))
-                ax.set(xscale="log", yscale="log", xlabel="Eigenvalue rank", ylabel="Eigenvalue of YᵀY")
+                ylabel = r"Eigenvalue of $Y_c^\top Y_c$" if centered else "Eigenvalue of YᵀY"
+                ax.set(xscale="log", yscale="log", xlabel="Eigenvalue rank", ylabel=ylabel)
                 ax.legend(fontsize=7)
                 save(fig, f"d{depth}_spectrum")
                 for j, alpha in enumerate(relevant[0][metric]["alphas"]):
@@ -78,8 +84,9 @@ def main():
                         mean, sd = stats["mean_components"][j], stats["std_components"][j]
                         ax.errorbar(heads[0], mean, yerr=sd, fmt="o", capsize=3, label=record["model"])
                         count_rows.append({"model": record["model"], "depth": depth, "heads": heads[0],
-                                           "fraction": alpha, "mean": mean, "population_sd": sd})
-                    ax.set(xlabel="Laplacian heads per block", ylabel=f"Components explaining {100 * alpha:g}% energy")
+                                           "fraction": alpha, "mean": mean, "population_sd": sd, "centering": centering})
+                    energy = "centered energy" if centered else "energy"
+                    ax.set(xlabel="Laplacian heads per block", ylabel=f"Components explaining {100 * alpha:g}% {energy}")
                     save(fig, f"d{depth}_components_{100 * alpha:g}")
             else:
                 fig, axes = plt.subplots(1, 2, figsize=(9, 4))

@@ -1,4 +1,4 @@
-"""Measure the paper's uncentered spectra and all-position next-token ANOVA."""
+"""Measure token spectra and all-position next-token ANOVA."""
 
 import argparse
 import os
@@ -9,7 +9,7 @@ import numpy as np
 import torch
 
 from nanochat.measurements.data import load_contexts, sha256_file, write_json
-from nanochat.measurements.statistics import ALPHAS, TokenClassMoments, component_counts, spectrum_summary, uncentered_spectrum
+from nanochat.measurements.statistics import ALPHAS, TokenClassMoments, component_counts, spectrum_summary, token_spectrum
 
 
 def main():
@@ -21,11 +21,14 @@ def main():
     parser.add_argument("--output", type=Path, required=True, help="New output .json; spectra are saved alongside as .npz")
     parser.add_argument("--batch-size", type=int, default=4)
     parser.add_argument("--spectrum-sequences", type=int, default=512)
+    parser.add_argument("--center", action="store_true", help="Subtract each sequence's mean token vector for spectra only")
     parser.add_argument("--seed", type=int, default=23, help="Spectrum sequence selection seed")
     parser.add_argument("--device", choices=("cuda", "cpu"), default="cuda")
     parser.add_argument("--spectral-device", choices=("cpu", "model"), default="model")
     parser.add_argument("--cpu-threads", type=int, default=4)
     args = parser.parse_args()
+    if args.center and args.metrics == "anova":
+        parser.error("--center applies to spectra; use --metrics spectrum or both")
     if min(args.batch_size, args.spectrum_sequences, args.cpu_threads) < 1:
         parser.error("Batch size, sequence count, and thread count must be positive")
     if args.output.suffix != ".json":
@@ -82,16 +85,19 @@ def main():
                 inputs = torch.as_tensor(np.array(rows[ids, :-1], dtype=np.int64), device=device)
                 captured = features(inputs)
                 for matrix in captured:
-                    eigenvalues.append(uncentered_spectrum(matrix.cpu() if args.spectral_device == "cpu" else matrix))
+                    eigenvalues.append(token_spectrum(
+                        matrix.cpu() if args.spectral_device == "cpu" else matrix, center=args.center,
+                    ))
                 print(f"Spectrum: {min(offset + len(ids), len(indices))}/{len(indices)} sequences", flush=True)
             values = np.stack(eigenvalues)
             archive = args.output.with_suffix(".npz")
             archive.parent.mkdir(parents=True, exist_ok=True)
             temporary = archive.with_suffix(".tmp.npz")
             np.savez_compressed(temporary, eigenvalues=values, component_counts=component_counts(values),
-                                alphas=np.asarray(ALPHAS), sample_indices=indices)
+                                alphas=np.asarray(ALPHAS), sample_indices=indices, centering=args.center)
             temporary.replace(archive)
             result["spectrum"] = {**spectrum_summary(values), "sample": source,
+                                  "centering": "per_sequence_token_mean" if args.center else "none",
                                   "sample_indices": indices.tolist(), "selection_seed": args.seed,
                                   "archive": archive.name, "archive_sha256": sha256_file(archive)}
             del captured, eigenvalues, values

@@ -1,4 +1,4 @@
-"""Per-image uncentered spectra and component counts after final LayerNorm."""
+"""Per-image spectra and component counts after final LayerNorm."""
 
 import argparse
 import csv
@@ -15,11 +15,13 @@ from dinov3.data.transforms import make_classification_eval_transform
 from .common import image_paths, load_teacher, model_specs, sha256, write_csv, write_json
 
 
-def eigenvalues(tokens):
-    """All d eigenvalues of X.T @ X, descending; no token mean is subtracted."""
+def eigenvalues(tokens, center=False):
+    """All d eigenvalues of X.T @ X, optionally centering X over patches."""
     if tokens.ndim != 3 or min(tokens.shape) < 1 or not torch.isfinite(tokens).all():
         raise ValueError("Expected finite, nonempty (images, patches, features) tokens")
     x = tokens.detach().double()
+    if center:
+        x = x - x.mean(dim=1, keepdim=True)
     options = {"driver": "gesvd"} if x.is_cuda else {}
     values = torch.linalg.svdvals(x, **options).square()
     return torch.nn.functional.pad(values, (0, x.shape[2] - values.shape[1]))
@@ -56,13 +58,13 @@ class Images(Dataset):
 
 
 @torch.inference_mode()
-def measure(model, loader, device, precision):
+def measure(model, loader, device, precision, center=False):
     parts = []
     for pixels in loader:
         context = torch.autocast(device.type, dtype=torch.bfloat16) if precision == "bf16" else nullcontext()
         with context:
             tokens = model.forward_features(pixels.to(device))["x_norm_patchtokens"]
-        parts.append(eigenvalues(tokens).cpu())
+        parts.append(eigenvalues(tokens, center=center).cpu())
     return torch.cat(parts), int(tokens.shape[1])
 
 
@@ -77,6 +79,7 @@ def main(argv=None):
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--precision", choices=("bf16", "fp32"), default="bf16")
+    parser.add_argument("--center", action="store_true", help="Subtract each image's mean patch vector before SVD")
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--limit", type=int, help="Measure only the first N selected images")
@@ -101,17 +104,17 @@ def main(argv=None):
     spectra_rows, counts_rows, models = [], [], []
     for spec in model_specs(args.models):
         model, info = load_teacher(spec, args.checkpoint_root, device)
-        values, tokens = measure(model, loader, device, args.precision)
+        values, tokens = measure(model, loader, device, args.precision, center=args.center)
         heads = int(spec["heads"])
         counts = {str(alpha): component_counts(values, alpha).numpy() for alpha in (.99, .999)}
         np.savez_compressed(args.output_dir / f"{heads}L_spectra.npz", eigenvalues=values.numpy(),
-                            tokens_per_image=tokens, **{f"k_{alpha}": v for alpha, v in counts.items()})
+                            tokens_per_image=tokens, centering=args.center, **{f"k_{alpha}": v for alpha, v in counts.items()})
         for rank, (mean, std) in enumerate(zip(values.mean(0), values.std(0, correction=0)), start=1):
             spectra_rows.append({"heads": heads, "rank": rank, "mean": float(mean), "std": float(std),
-                                 "n_images": len(values), "tokens_per_image": tokens})
+                                 "n_images": len(values), "tokens_per_image": tokens, "centering": args.center})
         for alpha, count in counts.items():
             counts_rows.append({"heads": heads, "energy_fraction": float(alpha), "n_images": len(count),
-                                "mean_components": float(count.mean()), "std_components": float(count.std(ddof=0))})
+                                "mean_components": float(count.mean()), "std_components": float(count.std(ddof=0)), "centering": args.center})
         models.append(info)
         print(f"{heads}L: {len(values)} images, {tokens} patches, {values.shape[1]} eigenvalues", flush=True)
         del model
@@ -122,7 +125,7 @@ def main(argv=None):
     write_json(args.output_dir / "metadata.json", {
         "measurement": "spectrum", "models": models, "n_images": len(dataset),
         "samples_sha256": sha256(args.output_dir / "samples.csv"),
-        "representation": "final LayerNorm patch tokens; CLS/registers excluded", "centering": False,
+        "representation": "final LayerNorm patch tokens; CLS/registers excluded", "centering": args.center,
         "inference_precision": args.precision, "spectral_precision": "float64",
         "standard_deviation": "population, ddof=0", "torch": torch.__version__, "device": str(device),
     })

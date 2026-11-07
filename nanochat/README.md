@@ -72,3 +72,5 @@ python -m scripts.plot_measurements outputs/measurements/*.json \
 ```
 
 `--step=STEP` selects a saved checkpoint; `--batch-size` controls inference memory.
+Add `--center` to subtract each sequence's mean token vector before computing spectra
+and component counts. Spectra are uncentered by default; ANOVA is unaffected.

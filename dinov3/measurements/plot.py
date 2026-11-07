@@ -26,7 +26,7 @@ def save(fig, directory, name):
     plt.close(fig)
 
 
-def spectra(source, output):
+def spectra(source, output, center=False):
     with (source / "spectrum.csv").open() as stream:
         rows = list(csv.DictReader(stream))
     heads = sorted({int(row["heads"]) for row in rows})
@@ -43,7 +43,7 @@ def spectra(source, output):
             # Only the display is clipped: numeric means/SDs stay unchanged.
             lower = np.maximum(mean - std, np.maximum(mean, np.finfo(float).tiny) * 1e-3)
             ax.fill_between(rank, lower, mean + std, alpha=.15, color=color)
-        ax.set(xlabel="Eigenvalue rank", ylabel="Eigenvalue", yscale="log")
+        ax.set(xlabel="Eigenvalue rank", ylabel="Eigenvalue (centered)" if center else "Eigenvalue", yscale="log")
         ax.legend(frameon=False)
         save(fig, output, name)
     with (source / "component_counts.csv").open() as stream:
@@ -55,7 +55,7 @@ def spectra(source, output):
         ax.bar([label(int(row["heads"])) for row in selected], [float(row["mean_components"]) for row in selected],
                yerr=[float(row["std_components"]) for row in selected], capsize=3,
                color=[COLORS.get(int(row["heads"]), "gray") for row in selected])
-        ax.set(ylabel=f"Components for {100 * alpha:g}% energy")
+        ax.set(ylabel=f"Components for {100 * alpha:g}% energy" + (" (centered)" if center else ""))
         save(fig, output, f"component_counts_{100 * alpha:g}")
 
 
@@ -96,7 +96,7 @@ def main(argv=None):
     metadata = read_json(args.input_dir / "metadata.json")
     with plt.rc_context({"font.family": "serif", "pdf.fonttype": 42, "image.composite_image": False}):
         if metadata["measurement"] == "spectrum":
-            spectra(args.input_dir, args.output_dir)
+            spectra(args.input_dir, args.output_dir, center=metadata.get("centering", False))
         elif metadata["measurement"] == "pca":
             pca_grids(args.input_dir, args.output_dir, metadata)
         else:

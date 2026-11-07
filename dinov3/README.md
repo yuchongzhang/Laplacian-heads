@@ -92,4 +92,6 @@ python -m measurements.plot \
   --input-dir outputs/pca --output-dir outputs/pca/figures
 ```
 
+Spectra are uncentered by default. Add `--center` to the spectrum command to subtract each image’s mean patch vector before SVD; this option applies only to spectra.
+
 Spectra produce per-image eigenvalues/component counts and CSV summaries; PCA produces scores and color maps. Plotting writes PNG/PDF figures. To select images with external CSV/JSON manifests, use `--samples` as described in [DATASETS.md](DATASETS.md#measurement-images).
