@@ -5,7 +5,7 @@ Code for **[Laplacian Heads Improve Transformers by Smoothing Token Representati
 For query, key, and value matrices $Q$, $K$, and $V$, the row-wise attention matrix is
 
 $$
-P = \text{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}}\right),
+P = \text{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right),
 $$
 
 where $d_k$ is the query/key dimension and the model's attention mask is applied when needed.
