@@ -79,9 +79,7 @@ for METRIC in anova cosine snr nc pca simplex; do
 done
 ```
 
-For CIFAR measurements, change `--dataset` to `cifar10` or `cifar100` and supply  
-the corresponding model, checkpoint, and data directory. SNR only applies to ImageNet.  
-See the [classification README](pytorch-image-models/README.md) for metric options.
+For CIFAR measurements, change `--dataset` to `cifar10` or `cifar100` and supply the corresponding model, checkpoint, and data directory. SNR only applies to ImageNet. See the [classification README](pytorch-image-models/README.md) for more details.
 
 ## Causal Language modeling
 
@@ -116,8 +114,7 @@ torchrun --standalone --nproc_per_node=4 -m scripts.base_eval \
     --split-tokens=20971520 --max-per-task=-1 --seed="$SEED"
 ```
 
-The paper's head counts are: d12 `{0,1,3,5,6}`, d20 `{0,3,5,7,10}`, d30 `{0,3,6,9,12,15}`.
-Use the matching tokenizer when loading a checkpoint; see [SETUP.md](SETUP.md) for hardware requirements.
+The paper's head counts are: d12 `{0,1,3,5,6}`, d20 `{0,3,5,7,10}`, d30 `{0,3,6,9,12,15}`. Use the matching tokenizer when loading a checkpoint; see [SETUP.md](SETUP.md) for hardware requirements.
 
 Measure the RMS-normalized residual stream after attention in the second-to-last block:
 
@@ -136,9 +133,7 @@ python -m scripts.measure_representations \
 python -m scripts.plot_measurements "outputs/${TAG}.json" --output-dir outputs/figures
 ```
 
-These commands produce spectra, component counts, and next-token ANOVA.
-Add `--center` to `scripts.measure_representations` for spectra centered over tokens  
-within each sequence.
+These commands produce spectra, component counts, and next-token ANOVA. Add `--center` to `scripts.measure_representations` for spectra centered over tokens within each sequence.
 
 ## DINO
 
@@ -202,10 +197,7 @@ python -m measurements.plot --input-dir outputs/spectrum --output-dir outputs/sp
 python -m measurements.plot --input-dir outputs/pca --output-dir outputs/pca-figures
 ```
 
-`--images` accepts image files or folders. See the [DINO README](dinov3/README.md)
-for the model manifest format and image-selection options.
-Add `--center` to `measurements.spectrum` to subtract each image's mean patch vector
-before computing spectra and component counts.
+`--images` accepts image files or folders. See the [DINO README](dinov3/README.md) for more details. Add `--center` to `measurements.spectrum` to subtract each image's mean patch vector before computing spectra and principal component counts.
 
 ## Citation
 
