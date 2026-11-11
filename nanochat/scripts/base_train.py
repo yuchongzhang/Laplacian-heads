@@ -1,4 +1,4 @@
-"""Train the causal language model with fixed Laplacian heads."""
+"""Train the causal language model with a fixed number of Laplacian heads per layer."""
 
 import os
 os.environ["PYTORCH_ALLOC_CONF"] = "expandable_segments:True"

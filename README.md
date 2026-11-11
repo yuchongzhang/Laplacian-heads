@@ -74,7 +74,6 @@ for METRIC in anova cosine snr nc pca simplex; do
         --checkpoint "$CHECKPOINT" --output "outputs/${METRIC}.json"
     python -m analysis.plot "outputs/${METRIC}.json" --output "outputs/${METRIC}.pdf"
 done
-python -m analysis.aggregate outputs/imagenet/*/summary.csv --output outputs/accuracy.csv
 ```
 
 For CIFAR measurements, change `--dataset` to `cifar10` or `cifar100` and supply
@@ -122,11 +121,9 @@ python -m scripts.measure_representations \
     --checkpoint-dir "$NANOCHAT_BASE_DIR/base_checkpoints/$TAG" \
     --data outputs/contexts.npy --output "outputs/${TAG}.json"
 python -m scripts.plot_measurements "outputs/${TAG}.json" --output-dir outputs/figures
-python -m scripts.plot_performance \
-    "$NANOCHAT_BASE_DIR"/base_eval/*/base_model_*.json --output-dir outputs/performance
 ```
 
-These commands produce spectra, component counts, next-token ANOVA, and BPB/CORE summaries.
+These commands produce spectra, component counts, and next-token ANOVA.
 Add `--center` to `scripts.measure_representations` for spectra centered over tokens
 within each sequence. The default is uncentered; ANOVA is unaffected.
 
@@ -167,9 +164,6 @@ torchrun --standalone --nproc_per_node=1 -m dinov3.eval.segmentation.run \
     model.config_file="$RUN/config.yaml" \
     model.pretrained_weights="$RUN/eval/training_142999/teacher_checkpoint.pth" \
     datasets.root="$ADE20K" output_dir="$RUN/segmentation"
-EVALUATION_RUNS=/path/to/runs.json
-python -m measurements.evaluation --runs "$EVALUATION_RUNS" \
-    --results-root outputs --output-dir outputs/evaluation-summary
 ```
 
 Measure patch spectra, component counts, and PCA maps:
@@ -187,7 +181,7 @@ python -m measurements.plot --input-dir outputs/pca --output-dir outputs/pca-fig
 ```
 
 `--images` accepts image files or folders. See the [DINO README](dinov3/README.md)
-for model/run manifest formats and image-selection options.
+for the model manifest format and image-selection options.
 Add `--center` to `measurements.spectrum` to subtract each image's mean patch vector
 before computing spectra and component counts; the default is uncentered.
 

@@ -1,4 +1,4 @@
-"""Causal Transformer with fixed trailing Laplacian attention heads."""
+"""Causal Transformer with a fixed number of Laplacian heads per layer."""
 
 from dataclasses import dataclass, fields
 

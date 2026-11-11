@@ -5,9 +5,9 @@ Code for [Laplacian Heads Improve Transformers by Smoothing Token Representation
 - `dinov3/layers/attention.py`: attention and Laplacian heads.
 - `dinov3/models/`: ViT-S/16 backbones.
 - `dinov3/train/`: self-supervised training.
-- `dinov3/eval/`: frozen ImageNet classification and ADE20K segmentation.
+- `dinov3/eval/`: frozen ImageNet classification and ADE20K segmentation evaluation.
 - `dinov3/configs/`: training and evaluation configurations.
-- `measurements/`: spectra, PCA maps, evaluation summaries, and plotting.
+- `measurements/`: spectra, PCA maps, and plotting.
 - [LICENSE.md](LICENSE.md): license for the [DINOv3](https://github.com/facebookresearch/dinov3) source.
 
 Run commands from this directory after [setup](../SETUP.md). See [DATASETS.md](DATASETS.md) for dataset layouts.
@@ -50,18 +50,7 @@ torchrun --standalone --nproc_per_node=1 -m dinov3.eval.segmentation.run \
   datasets.root="$ADE20K" output_dir="$RUN/segmentation"
 ```
 
-Evaluations write accuracy/mIoU results. To summarize runs across training seeds, create `runs.json`:
-
-```json
-{"runs": [{"model": "ViT-S-3L", "training_seed": 0, "linear": "vits_3L_seed0/linear", "segmentation": "vits_3L_seed0/segmentation"}]}
-```
-
-```bash
-python -m measurements.evaluation --runs runs.json --results-root outputs \
-  --output-dir outputs/evaluation_summary
-```
-
-Alternatively, use `--per-run results.csv` with columns `model,training_seed,task,metric,value`. The summary writes means and sample standard deviations.
+Evaluations write accuracy/mIoU results.
 
 ## Spectra and PCA
 

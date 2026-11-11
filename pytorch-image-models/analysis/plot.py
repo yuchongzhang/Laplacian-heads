@@ -1,4 +1,4 @@
-"""Plot saved analysis.measure JSON files without rerunning a model."""
+"""Plot saved analysis.measure JSON files."""
 import argparse
 import json
 from pathlib import Path

@@ -1,4 +1,4 @@
-"""Token spectra and streaming, observation-weighted next-token ANOVA."""
+"""Token spectra and streaming next-token ANOVA."""
 
 import numpy as np
 import torch

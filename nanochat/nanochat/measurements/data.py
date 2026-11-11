@@ -1,5 +1,3 @@
-"""Best-fit contexts and portable, checksummed measurement files."""
-
 import hashlib
 import json
 import os

@@ -1,5 +1,3 @@
-"""Infinite BOS-aligned best-fit packing for training and BPB evaluation."""
-
 import random
 
 import torch

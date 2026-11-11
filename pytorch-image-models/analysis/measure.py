@@ -1,8 +1,4 @@
-"""Run one image-classification measurement on an explicitly chosen checkpoint.
-
-Examples and measurement definitions are in the task README. Outputs contain the
-actual head count, transforms, layer names, and selected dataset indices.
-"""
+"""Run one image-classification measurement on an explicitly chosen checkpoint."""
 import argparse
 import json
 import random

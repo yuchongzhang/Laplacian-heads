@@ -1,4 +1,4 @@
-"""Per-image spectra and component counts after final LayerNorm."""
+"""Per-image spectra and principal component counts after final LayerNorm."""
 
 import argparse
 import csv

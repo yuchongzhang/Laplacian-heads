@@ -2,7 +2,7 @@
 """CIFAR Training
 
 Train DeiT-B on CIFAR-10 or CIFAR-100.
-Designed for single-GPU training with easy hyperparameter configuration.
+Designed for single-GPU training.
 """
 import argparse
 import json

@@ -2,9 +2,9 @@
 
 DeiT-B experiments for [Laplacian Heads Improve Transformers by Smoothing Token Representations](https://arxiv.org/abs/2602.09297).
 
-- `timm/`: models, Laplacian attention, and training utilities; `configs/`: training configurations.
-- `train.py`: ImageNet training; `train_cifar.py`: shared CIFAR training.
-- `analysis/`: measurements, plots, and accuracy aggregation.
+- `timm/`: architecture definitions and training utilities; `configs/`: training configurations.
+- `train.py`: ImageNet training script; `train_cifar.py`: shared CIFAR training script.
+- `analysis/`: measurements and plots.
 
 Run commands from this directory after activating the environment in [SETUP.md](../SETUP.md).
 
@@ -13,8 +13,13 @@ Run commands from this directory after activating the environment in [SETUP.md](
 `L` counts Laplacian heads per block. Replace `3L` with `1L`, `6L`, `9L`, `11L`, or `12L`. Baselines: `deit3_base_qk_norm_patch4_32` (CIFAR) and `deit3_base_qk_norm_patch16_224` (ImageNet).
 
 ```bash
+# CIFAR10
 python train_cifar10.py --config configs/cifar10.yaml --data-dir /path/to/cifar10 --model deit3_base_3L_patch4_32 --seed 42 --output outputs/cifar10
+
+# CIFAR100
 python train_cifar100.py --config configs/cifar100.yaml --data-dir /path/to/cifar100 --model deit3_base_3L_patch4_32 --seed 42 --output outputs/cifar100
+
+# ImageNet
 torchrun --standalone --nproc_per_node=4 train.py --config configs/deit3_base_12L_qk_norm.yaml --data-dir /path/to/imagenet --model deit3_base_3L_patch16_224 --seed 2026 --output outputs/imagenet
 ```
 
@@ -31,11 +36,22 @@ python validate.py --data-dir /path/to/imagenet --model deit3_base_3L_patch16_22
 Use a checkpoint matching the model and dataset. CIFAR data must already be downloaded; ImageNet needs all 1,000 class folders under `val/`.
 
 ```bash
+# ANOVA
 python -m analysis.measure anova --dataset cifar100 --data-root /path/to/cifar100 --model deit3_base_3L_patch4_32 --checkpoint /path/to/best.pth --output outputs/anova.json
+
+# Cosine Similarity
 python -m analysis.measure cosine --dataset cifar100 --data-root /path/to/cifar100 --model deit3_base_3L_patch4_32 --checkpoint /path/to/best.pth --output outputs/cosine.json
+
+# NC metrics
 python -m analysis.measure nc --dataset cifar100 --data-root /path/to/cifar100 --model deit3_base_3L_patch4_32 --checkpoint /path/to/best.pth --output outputs/nc.json
+
+# PCA
 python -m analysis.measure pca --dataset cifar100 --data-root /path/to/cifar100 --model deit3_base_3L_patch4_32 --checkpoint /path/to/best.pth --output outputs/pca.json
+
+# Projection onto simplex
 python -m analysis.measure simplex --dataset cifar100 --data-root /path/to/cifar100 --model deit3_base_3L_patch4_32 --checkpoint /path/to/best.pth --output outputs/simplex.json
+
+# Layer-wise SNR
 python -m analysis.measure snr --dataset imagenet --data-root /path/to/imagenet --model deit3_base_3L_patch16_224 --checkpoint /path/to/model_best.pth.tar --output outputs/snr.json
 ```
 
@@ -50,13 +66,12 @@ Dataset choices: `cifar10`, `cifar100`, `imagenet`; use a `patch16_224` model fo
 | `pca` | CIFAR-10/100, ImageNet | `--classes 1 7 9`, `--samples-per-class 50`, `--seed 1002`, `--layer norm_final` or `block_0`–`block_11` |
 | `simplex` | CIFAR-10/100, ImageNet | `--classes 1 7 9` (exactly three), `--samples-per-class 50`, `--seed 2027` |
 
-## Plot and aggregate
+## Plot
 
-Plot any measurement JSON; multiple inputs must contain the same metric. Aggregate training logs to an accuracy CSV. CIFAR logs need all 300 epochs; ImageNet summaries need epochs 270–299 and an adjacent `args.yaml`.
+Plot any measurement JSON; multiple inputs must contain the same metric.
 
 ```bash
 python -m analysis.plot outputs/anova.json --output outputs/anova.pdf
+
 python -m analysis.plot outputs/cosine_baseline.json outputs/cosine_12L.json --output outputs/cosine.pdf
-python -m analysis.aggregate outputs/cifar100/RUN/training_log.json --dataset cifar100 --output outputs/cifar100_accuracy.csv
-python -m analysis.aggregate outputs/imagenet/RUN/summary.csv --output outputs/imagenet_accuracy.csv
 ```

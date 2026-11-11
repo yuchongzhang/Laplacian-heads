@@ -1,5 +1,3 @@
-"""Observe the exact tensor used by every language measurement in the paper."""
-
 import torch
 
 

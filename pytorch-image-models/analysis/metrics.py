@@ -1,9 +1,4 @@
-"""Numerical definitions, preserving the historical image-analysis conventions.
-
-All operations include the CLS token. CosSim and SNR receive dataset-centered
-features. NC centers both class means and classifier weights. Simplex centers
-selected classifier weights, as the original figure-producing code did.
-"""
+"""Numerical definitions of metrics: cossim, SNR, PCA, Simplex projection, NC metrics."""
 import torch
 import torch.nn.functional as F
 
